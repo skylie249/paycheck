@@ -26,6 +26,15 @@ const currency = new Intl.NumberFormat("en-US", {
   maximumFractionDigits: 0,
 });
 
+const percent = new Intl.NumberFormat("en-US", {
+  style: "percent",
+  maximumFractionDigits: 1,
+});
+
+const inputClass =
+  "rounded-lg border border-surface-border bg-surface px-3 py-2.5 text-sm text-foreground shadow-sm outline-none transition-colors focus:border-brand focus:ring-2 focus:ring-brand/20 dark:[color-scheme:dark]";
+const labelClass = "flex flex-col gap-1.5 text-sm font-medium text-foreground/80";
+
 export default function PaycheckCalculator() {
   const [grossAnnualSalary, setGrossAnnualSalary] = useState(75000);
   const [filingStatus, setFilingStatus] = useState<FilingStatus>("single");
@@ -45,122 +54,207 @@ export default function PaycheckCalculator() {
     [grossAnnualSalary, filingStatus, stateCode, payFrequency, preTaxDeductions]
   );
 
+  const totalDeductions =
+    result.federalTaxPerPeriod +
+    result.stateTaxPerPeriod +
+    result.socialSecurityPerPeriod +
+    result.medicarePerPeriod;
+
+  const takeHomeRate = result.grossPerPeriod > 0 ? result.netPerPeriod / result.grossPerPeriod : 0;
+
+  const breakdown = [
+    { label: "Federal tax", value: result.federalTaxPerPeriod, color: "bg-rose-400" },
+    { label: "State tax", value: result.stateTaxPerPeriod, color: "bg-amber-400" },
+    { label: "Social Security", value: result.socialSecurityPerPeriod, color: "bg-sky-400" },
+    { label: "Medicare", value: result.medicarePerPeriod, color: "bg-violet-400" },
+  ];
+
+  const periodLabel = payFrequency === "annually" ? "year" : "pay period";
+
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-col gap-8 px-6 py-16">
+    <div className="mx-auto flex w-full max-w-4xl flex-col gap-6 px-4 py-10 sm:px-6 sm:py-16">
       <header className="flex flex-col gap-2">
-        <h1 className="text-2xl font-semibold tracking-tight">
+        <div className="inline-flex w-fit items-center gap-1.5 rounded-full bg-brand/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-brand">
+          Free tool
+        </div>
+        <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
           US Paycheck Calculator
         </h1>
-        <p className="text-sm text-zinc-500">
+        <p className="max-w-xl text-sm text-foreground/60 sm:text-base">
           Estimate your take-home pay after federal tax, state tax, Social
-          Security, and Medicare.
+          Security, and Medicare — updated for the {new Date().getFullYear()}{" "}
+          tax year.
         </p>
       </header>
 
-      <section className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <label className="flex flex-col gap-1 text-sm">
-          Gross annual salary
-          <input
-            type="number"
-            min={0}
-            step={1000}
-            value={grossAnnualSalary}
-            onChange={(e) => setGrossAnnualSalary(Number(e.target.value))}
-            className="rounded border border-zinc-300 px-3 py-2 dark:border-zinc-700 dark:bg-zinc-900"
-          />
-        </label>
-
-        <label className="flex flex-col gap-1 text-sm">
-          Filing status
-          <select
-            value={filingStatus}
-            onChange={(e) => setFilingStatus(e.target.value as FilingStatus)}
-            className="rounded border border-zinc-300 px-3 py-2 dark:border-zinc-700 dark:bg-zinc-900"
-          >
-            {Object.entries(filingStatusLabels).map(([value, label]) => (
-              <option key={value} value={value}>
-                {label}
-              </option>
-            ))}
-          </select>
-        </label>
-
-        <label className="flex flex-col gap-1 text-sm">
-          State
-          <select
-            value={stateCode}
-            onChange={(e) => setStateCode(e.target.value)}
-            className="rounded border border-zinc-300 px-3 py-2 dark:border-zinc-700 dark:bg-zinc-900"
-          >
-            {availableStateCodes.map((code) => (
-              <option key={code} value={code}>
-                {stateTaxTables[code].name} ({code})
-              </option>
-            ))}
-          </select>
-        </label>
-
-        <label className="flex flex-col gap-1 text-sm">
-          Pay frequency
-          <select
-            value={payFrequency}
-            onChange={(e) => setPayFrequency(e.target.value as PayFrequency)}
-            className="rounded border border-zinc-300 px-3 py-2 dark:border-zinc-700 dark:bg-zinc-900"
-          >
-            {Object.entries(payFrequencyLabels).map(([value, label]) => (
-              <option key={value} value={value}>
-                {label}
-              </option>
-            ))}
-          </select>
-        </label>
-
-        <label className="flex flex-col gap-1 text-sm sm:col-span-2">
-          Pre-tax deductions (annual, e.g. 401k, health insurance)
-          <input
-            type="number"
-            min={0}
-            step={100}
-            value={preTaxDeductions}
-            onChange={(e) => setPreTaxDeductions(Number(e.target.value))}
-            className="rounded border border-zinc-300 px-3 py-2 dark:border-zinc-700 dark:bg-zinc-900"
-          />
-        </label>
+      {/* Hero result */}
+      <section className="overflow-hidden rounded-2xl border border-surface-border bg-gradient-to-br from-brand to-brand-light p-6 text-white shadow-lg sm:p-8">
+        <p className="text-sm font-medium uppercase tracking-wide text-white/80">
+          Estimated take-home pay per {periodLabel}
+        </p>
+        <p className="mt-2 text-4xl font-bold tracking-tight sm:text-5xl">
+          {currency.format(result.netPerPeriod)}
+        </p>
+        <div className="mt-4 flex flex-wrap items-center gap-x-6 gap-y-1 text-sm text-white/90">
+          <span>
+            Gross: <strong className="font-semibold">{currency.format(result.grossPerPeriod)}</strong>
+          </span>
+          <span>
+            Take-home rate:{" "}
+            <strong className="font-semibold">{percent.format(takeHomeRate)}</strong>
+          </span>
+          <span>
+            Annual net: <strong className="font-semibold">{currency.format(result.annual.net)}</strong>
+          </span>
+        </div>
       </section>
 
-      <section className="rounded-lg border border-zinc-200 p-6 dark:border-zinc-800">
-        <h2 className="mb-4 text-sm font-medium text-zinc-500">
-          Estimated results — per {payFrequency === "annually" ? "year" : "pay period"}
-        </h2>
-        <dl className="grid grid-cols-2 gap-y-3 text-sm">
-          <dt className="text-zinc-500">Gross pay</dt>
-          <dd className="text-right font-medium">{currency.format(result.grossPerPeriod)}</dd>
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
+        {/* Inputs */}
+        <section className="flex flex-col gap-5 rounded-2xl border border-surface-border bg-surface p-6 shadow-sm lg:col-span-3">
+          <div>
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-brand">Income</h2>
+            <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <label className={labelClass}>
+                Gross annual salary
+                <input
+                  type="number"
+                  min={0}
+                  step={1000}
+                  value={grossAnnualSalary}
+                  onChange={(e) => setGrossAnnualSalary(Number(e.target.value))}
+                  className={inputClass}
+                />
+              </label>
 
-          <dt className="text-zinc-500">Federal tax</dt>
-          <dd className="text-right">- {currency.format(result.federalTaxPerPeriod)}</dd>
+              <label className={labelClass}>
+                Pay frequency
+                <select
+                  value={payFrequency}
+                  onChange={(e) => setPayFrequency(e.target.value as PayFrequency)}
+                  className={inputClass}
+                >
+                  {Object.entries(payFrequencyLabels).map(([value, label]) => (
+                    <option key={value} value={value}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+          </div>
 
-          <dt className="text-zinc-500">State tax</dt>
-          <dd className="text-right">- {currency.format(result.stateTaxPerPeriod)}</dd>
+          <div className="h-px bg-surface-border" />
 
-          <dt className="text-zinc-500">Social Security</dt>
-          <dd className="text-right">- {currency.format(result.socialSecurityPerPeriod)}</dd>
+          <div>
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-brand">Filing details</h2>
+            <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <label className={labelClass}>
+                Filing status
+                <select
+                  value={filingStatus}
+                  onChange={(e) => setFilingStatus(e.target.value as FilingStatus)}
+                  className={inputClass}
+                >
+                  {Object.entries(filingStatusLabels).map(([value, label]) => (
+                    <option key={value} value={value}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
+              </label>
 
-          <dt className="text-zinc-500">Medicare</dt>
-          <dd className="text-right">- {currency.format(result.medicarePerPeriod)}</dd>
+              <label className={labelClass}>
+                State
+                <select
+                  value={stateCode}
+                  onChange={(e) => setStateCode(e.target.value)}
+                  className={inputClass}
+                >
+                  {availableStateCodes.map((code) => (
+                    <option key={code} value={code}>
+                      {stateTaxTables[code].name} ({code})
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+          </div>
 
-          <dt className="border-t border-zinc-200 pt-3 font-semibold dark:border-zinc-800">
-            Net (take-home) pay
-          </dt>
-          <dd className="border-t border-zinc-200 pt-3 text-right font-semibold dark:border-zinc-800">
-            {currency.format(result.netPerPeriod)}
-          </dd>
-        </dl>
-      </section>
+          <div className="h-px bg-surface-border" />
 
-      <p className="text-xs text-zinc-400">
+          <div>
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-brand">Deductions</h2>
+            <label className={`${labelClass} mt-3`}>
+              Pre-tax deductions (annual — 401k, health insurance, etc.)
+              <input
+                type="number"
+                min={0}
+                step={100}
+                value={preTaxDeductions}
+                onChange={(e) => setPreTaxDeductions(Number(e.target.value))}
+                className={inputClass}
+              />
+            </label>
+          </div>
+        </section>
+
+        {/* Breakdown */}
+        <section className="flex flex-col gap-5 rounded-2xl border border-surface-border bg-surface p-6 shadow-sm lg:col-span-2">
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-brand">
+            Where your paycheck goes
+          </h2>
+
+          <div className="flex h-3 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
+            {breakdown.map((item) => {
+              const widthPct = result.grossPerPeriod > 0 ? (item.value / result.grossPerPeriod) * 100 : 0;
+              return (
+                <div
+                  key={item.label}
+                  className={`${item.color} h-full transition-all`}
+                  style={{ width: `${widthPct}%` }}
+                  title={`${item.label}: ${currency.format(item.value)}`}
+                />
+              );
+            })}
+            <div
+              className="h-full bg-emerald-400"
+              style={{
+                width: `${result.grossPerPeriod > 0 ? (result.netPerPeriod / result.grossPerPeriod) * 100 : 0}%`,
+              }}
+              title={`Take-home: ${currency.format(result.netPerPeriod)}`}
+            />
+          </div>
+
+          <dl className="flex flex-col gap-2.5 text-sm">
+            {breakdown.map((item) => (
+              <div key={item.label} className="flex items-center justify-between">
+                <dt className="flex items-center gap-2 text-foreground/70">
+                  <span className={`h-2.5 w-2.5 rounded-full ${item.color}`} />
+                  {item.label}
+                </dt>
+                <dd className="font-medium text-foreground">- {currency.format(item.value)}</dd>
+              </div>
+            ))}
+            <div className="flex items-center justify-between border-t border-surface-border pt-2.5 text-foreground/70">
+              <dt className="flex items-center gap-2">
+                <span className="h-2.5 w-2.5 rounded-full bg-emerald-400" />
+                Take-home pay
+              </dt>
+              <dd className="font-semibold text-foreground">{currency.format(result.netPerPeriod)}</dd>
+            </div>
+            <div className="flex items-center justify-between text-xs text-foreground/50">
+              <dt>Total deductions</dt>
+              <dd>{currency.format(totalDeductions)}</dd>
+            </div>
+          </dl>
+        </section>
+      </div>
+
+      <p className="rounded-xl bg-amber-50 px-4 py-3 text-xs leading-relaxed text-amber-800 dark:bg-amber-900/20 dark:text-amber-300">
         Estimates only, based on {new Date().getFullYear()} placeholder tax
-        tables. Not tax advice — consult a tax professional for your actual
-        withholding and liability.
+        tables for illustration. Not tax advice — consult a tax professional
+        or your payroll provider for your actual withholding and liability.
       </p>
     </div>
   );
