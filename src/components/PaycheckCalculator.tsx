@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { calculatePaycheck } from "@/lib/paycheck/calculate";
 import { availableStateCodes, stateTaxTables } from "@/lib/tax/states";
 import type { FilingStatus, PayFrequency } from "@/types/paycheck";
+import AdSlot from "@/components/AdSlot";
 
 const filingStatusLabels: Record<FilingStatus, string> = {
   single: "Single",
@@ -34,14 +35,6 @@ const percent = new Intl.NumberFormat("en-US", {
 const inputClass =
   "rounded-lg border border-surface-border bg-surface px-3 py-2.5 text-sm text-foreground shadow-sm outline-none transition-colors focus:border-brand focus:ring-2 focus:ring-brand/20 dark:[color-scheme:dark]";
 const labelClass = "flex flex-col gap-1.5 text-sm font-medium text-foreground/80";
-
-const GROSS_SALARY_MAX = 500000;
-const PRE_TAX_DEDUCTIONS_MAX = 50000;
-
-function sliderStyle(value: number, max: number): React.CSSProperties {
-  const progress = Math.min(100, Math.max(0, (value / max) * 100));
-  return { "--slider-progress": `${progress}%` } as React.CSSProperties;
-}
 
 export default function PaycheckCalculator() {
   const [grossAnnualSalary, setGrossAnnualSalary] = useState(75000);
@@ -95,6 +88,8 @@ export default function PaycheckCalculator() {
         </p>
       </header>
 
+      <AdSlot slot="top-banner" minHeight={90} />
+
       {/* Hero result */}
       <section className="overflow-hidden rounded-2xl border border-surface-border bg-gradient-to-br from-brand to-brand-light p-6 text-white shadow-lg sm:p-8">
         <p className="text-sm font-medium uppercase tracking-wide text-white/80">
@@ -117,7 +112,9 @@ export default function PaycheckCalculator() {
         </div>
       </section>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-4">
+        {/* Inputs + breakdown */}
+        <div className="grid grid-cols-1 gap-6 lg:col-span-3 lg:grid-cols-5">
         {/* Inputs */}
         <section className="flex flex-col gap-5 rounded-2xl border border-surface-border bg-surface p-6 shadow-sm lg:col-span-3">
           <div>
@@ -132,17 +129,6 @@ export default function PaycheckCalculator() {
                   value={grossAnnualSalary}
                   onChange={(e) => setGrossAnnualSalary(Number(e.target.value))}
                   className={inputClass}
-                />
-                <input
-                  type="range"
-                  min={0}
-                  max={GROSS_SALARY_MAX}
-                  step={1000}
-                  value={grossAnnualSalary}
-                  onChange={(e) => setGrossAnnualSalary(Number(e.target.value))}
-                  style={sliderStyle(grossAnnualSalary, GROSS_SALARY_MAX)}
-                  className="slider"
-                  aria-label="Gross annual salary slider"
                 />
               </label>
 
@@ -214,17 +200,6 @@ export default function PaycheckCalculator() {
                 onChange={(e) => setPreTaxDeductions(Number(e.target.value))}
                 className={inputClass}
               />
-              <input
-                type="range"
-                min={0}
-                max={PRE_TAX_DEDUCTIONS_MAX}
-                step={100}
-                value={preTaxDeductions}
-                onChange={(e) => setPreTaxDeductions(Number(e.target.value))}
-                style={sliderStyle(preTaxDeductions, PRE_TAX_DEDUCTIONS_MAX)}
-                className="slider"
-                aria-label="Pre-tax deductions slider"
-              />
             </label>
           </div>
         </section>
@@ -279,7 +254,15 @@ export default function PaycheckCalculator() {
             </div>
           </dl>
         </section>
+        </div>
+
+        {/* Sidebar ad — desktop only */}
+        <div className="hidden lg:col-span-1 lg:block">
+          <AdSlot slot="sidebar" minHeight={600} className="sticky top-6 h-[600px]" />
+        </div>
       </div>
+
+      <AdSlot slot="bottom-banner" minHeight={90} />
 
       <p className="rounded-xl bg-amber-50 px-4 py-3 text-xs leading-relaxed text-amber-800 dark:bg-amber-900/20 dark:text-amber-300">
         Estimates only, based on {new Date().getFullYear()} placeholder tax

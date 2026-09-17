@@ -41,6 +41,15 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
+      {/* TODO: AdSense 승인 후 활성화 — client id를 실제 값으로 교체
+      <head>
+        <script
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXX"
+          crossOrigin="anonymous"
+        />
+      </head>
+      */}
       <body className="min-h-full flex flex-col">{children}</body>
     </html>
   );
