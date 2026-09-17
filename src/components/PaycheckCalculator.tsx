@@ -35,6 +35,14 @@ const inputClass =
   "rounded-lg border border-surface-border bg-surface px-3 py-2.5 text-sm text-foreground shadow-sm outline-none transition-colors focus:border-brand focus:ring-2 focus:ring-brand/20 dark:[color-scheme:dark]";
 const labelClass = "flex flex-col gap-1.5 text-sm font-medium text-foreground/80";
 
+const GROSS_SALARY_MAX = 500000;
+const PRE_TAX_DEDUCTIONS_MAX = 50000;
+
+function sliderStyle(value: number, max: number): React.CSSProperties {
+  const progress = Math.min(100, Math.max(0, (value / max) * 100));
+  return { "--slider-progress": `${progress}%` } as React.CSSProperties;
+}
+
 export default function PaycheckCalculator() {
   const [grossAnnualSalary, setGrossAnnualSalary] = useState(75000);
   const [filingStatus, setFilingStatus] = useState<FilingStatus>("single");
@@ -125,6 +133,17 @@ export default function PaycheckCalculator() {
                   onChange={(e) => setGrossAnnualSalary(Number(e.target.value))}
                   className={inputClass}
                 />
+                <input
+                  type="range"
+                  min={0}
+                  max={GROSS_SALARY_MAX}
+                  step={1000}
+                  value={grossAnnualSalary}
+                  onChange={(e) => setGrossAnnualSalary(Number(e.target.value))}
+                  style={sliderStyle(grossAnnualSalary, GROSS_SALARY_MAX)}
+                  className="slider"
+                  aria-label="Gross annual salary slider"
+                />
               </label>
 
               <label className={labelClass}>
@@ -194,6 +213,17 @@ export default function PaycheckCalculator() {
                 value={preTaxDeductions}
                 onChange={(e) => setPreTaxDeductions(Number(e.target.value))}
                 className={inputClass}
+              />
+              <input
+                type="range"
+                min={0}
+                max={PRE_TAX_DEDUCTIONS_MAX}
+                step={100}
+                value={preTaxDeductions}
+                onChange={(e) => setPreTaxDeductions(Number(e.target.value))}
+                style={sliderStyle(preTaxDeductions, PRE_TAX_DEDUCTIONS_MAX)}
+                className="slider"
+                aria-label="Pre-tax deductions slider"
               />
             </label>
           </div>
