@@ -4,7 +4,6 @@ import { useMemo, useState } from "react";
 import { calculatePaycheck } from "@/lib/paycheck/calculate";
 import { availableStateCodes, stateTaxTables } from "@/lib/tax/states";
 import type { FilingStatus, PayFrequency } from "@/types/paycheck";
-import AdSlot from "@/components/AdSlot";
 
 const filingStatusLabels: Record<FilingStatus, string> = {
   single: "Single",
@@ -88,8 +87,6 @@ export default function PaycheckCalculator() {
         </p>
       </header>
 
-      <AdSlot slot="top-banner" minHeight={90} />
-
       {/* Hero result */}
       <section className="overflow-hidden rounded-2xl border border-surface-border bg-gradient-to-br from-brand to-brand-light p-6 text-white shadow-lg sm:p-8">
         <p className="text-sm font-medium uppercase tracking-wide text-white/80">
@@ -112,9 +109,7 @@ export default function PaycheckCalculator() {
         </div>
       </section>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-4">
-        {/* Inputs + breakdown */}
-        <div className="grid grid-cols-1 gap-6 lg:col-span-3 lg:grid-cols-5">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
         {/* Inputs */}
         <section className="flex flex-col gap-5 rounded-2xl border border-surface-border bg-surface p-6 shadow-sm lg:col-span-3">
           <div>
@@ -254,15 +249,7 @@ export default function PaycheckCalculator() {
             </div>
           </dl>
         </section>
-        </div>
-
-        {/* Sidebar ad — desktop only */}
-        <div className="hidden lg:col-span-1 lg:block">
-          <AdSlot slot="sidebar" minHeight={600} className="sticky top-6 h-[600px]" />
-        </div>
       </div>
-
-      <AdSlot slot="bottom-banner" minHeight={90} />
 
       <p className="rounded-xl bg-amber-50 px-4 py-3 text-xs leading-relaxed text-amber-800 dark:bg-amber-900/20 dark:text-amber-300">
         Estimates only, based on {new Date().getFullYear()} placeholder tax
