@@ -1,0 +1,10 @@
+node_modules
+.env.local
+.next
+*.tsbuildinfo
+
+# 디자인 좌표 참고용으로만 쓰는 다운로드 자산 — 코드에서 로드되지 않음
+reference/
+
+*.md
+.vercel
